@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 const encrypt = require('mongoose-encryption');
+const md5 = require('md5');   // for hashing the password  
 
 const app= express();
 //console.log(process.env.SECRET); to access the key
@@ -22,9 +23,7 @@ const userSchema= new mongoose.Schema({
     password: String
 });
 
-// using a secret random String for encryption
 
-userSchema.plugin(encrypt, {secret: process.env.SECRET, encryptedFields: ['password']}); // only encrypting password field
 
 const User= new mongoose.model("User", userSchema);
 
@@ -41,7 +40,7 @@ app.get("/login", function(req, res){
 
 app.post("/login", function(req, res){
     const username= req.body.username;
-    const password= req.body.password;
+    const password= md5(req.body.password);   // md5 to match the hashed password
     
     //Find the user with matching credentials
 
@@ -69,7 +68,7 @@ app.get("/register", function(req, res){
 app.post("/register", function(req, res){
     const newUser= new User({
         email: req.body.username,
-        password:req.body.password
+        password:md5(req.body.password)      // md5(message) to hash the 'message'
     });
 
     newUser.save(function(err){
